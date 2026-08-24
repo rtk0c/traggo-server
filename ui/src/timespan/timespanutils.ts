@@ -4,36 +4,6 @@ import {toTagSelectorEntry} from '../tag/tagSelectorEntry';
 import moment from 'moment';
 import {TimeSpanProps} from './TimeSpan';
 import {TimeSpans_timeSpans_timeSpans} from '../gql/__generated__/TimeSpans';
-import {parseRelativeTime} from '../utils/time';
-
-export interface RangeVariables {
-    fromInclusive?: string;
-    toInclusive?: string;
-}
-
-export const toRangeVariables = (from?: string, to?: string): RangeVariables => {
-    const vars: RangeVariables = {};
-    const parsedFrom = from ? parseRelativeTime(from, 'startOf') : undefined;
-    const parsedTo = to ? parseRelativeTime(to, 'endOf') : undefined;
-    if (parsedFrom && parsedFrom.success) {
-        vars.fromInclusive = parsedFrom.normalized;
-    }
-    if (parsedTo && parsedTo.success) {
-        vars.toInclusive = parsedTo.normalized;
-    }
-    if (
-        parsedFrom &&
-        parsedTo &&
-        parsedFrom.success &&
-        parsedTo.success &&
-        !parsedFrom.preview.isSame(parsedTo.preview) &&
-        parsedFrom.preview.isAfter(parsedTo.preview)
-    ) {
-        // The server rejects ranges where 'from' is after 'to'; treat as unfiltered instead.
-        return {};
-    }
-    return vars;
-};
 
 export const toTimeSpanProps = (timers: Trackers_timers[], tags: Tags_tags[]): TimeSpanProps[] => {
     return [...timers].map((timer) => {

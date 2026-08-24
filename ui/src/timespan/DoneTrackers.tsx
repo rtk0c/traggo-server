@@ -8,7 +8,7 @@ import useInterval from '@rooks/use-interval';
 import moment from 'moment';
 import {TimeSpans, TimeSpansVariables} from '../gql/__generated__/TimeSpans';
 import {Typography} from '@material-ui/core';
-import {GroupedTimeSpanProps, toGroupedTimeSpanProps, toRangeVariables} from './timespanutils';
+import {GroupedTimeSpanProps, toGroupedTimeSpanProps} from './timespanutils';
 import {TagSelectorEntry} from '../tag/tagSelectorEntry';
 import ReactInfinite from 'react-infinite';
 import {isSameDate} from '../utils/time';
@@ -20,9 +20,9 @@ interface DoneTrackersProps {
 }
 
 export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, from, to}) => {
-    const range = React.useMemo(() => toRangeVariables(from, to), [from, to]);
+    console.log(from, to)
     const trackersResult = useQuery<TimeSpans, TimeSpansVariables>(gqlTimeSpan.TimeSpans, {
-        variables: {cursor: {pageSize: 30}, ...range},
+        variables: {cursor: {pageSize: 30}, from, to},
     });
     const loading = React.useRef(false);
     const tagsResult = useQuery<Tags>(gqlTag.Tags);
@@ -53,7 +53,8 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, fro
                         offset,
                         pageSize,
                     },
-                    ...range,
+                    from,
+                    to,
                 },
                 updateQuery: (prev, {fetchMoreResult}): TimeSpans => {
                     if (!fetchMoreResult) {
@@ -98,7 +99,7 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, fro
     return (
         <div style={{marginTop: 10}}>
             <ReactInfinite
-                key={`${range.fromInclusive || ''}-${range.toInclusive || ''}`}
+                key={`${from || ''}-${to || ''}`}
                 useWindowAsScrollContainer
                 preloadBatchSize={window.innerHeight}
                 onInfiniteLoad={fetchMore}
