@@ -40,8 +40,8 @@ export const TimeSpansInRange = gql`
 `;
 
 export const TimeSpans = gql`
-    query TimeSpans($cursor: InputCursor) {
-        timeSpans(cursor: $cursor) @connection(key: "AllTimeSpans") {
+    query TimeSpans($cursor: InputCursor, $from: Time, $to: Time) {
+        timeSpans(cursor: $cursor, fromInclusive: $from, toInclusive: $to) @connection(key: "AllTimeSpans") {
             timeSpans {
                 id
                 start
