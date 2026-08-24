@@ -205,6 +205,7 @@ export const CalendarPage: React.FC = () => {
                 .add(15, 'minute')
                 .toDate(),
             className: '__start',
+            title: 'START',
             editable: false,
             id: StartTimerId,
         };
@@ -235,6 +236,7 @@ export const CalendarPage: React.FC = () => {
                         },
                     }}
                     editable={true}
+                    eventLimit={true}
                     events={values}
                     allDaySlot={false}
                     selectable={true}
@@ -245,6 +247,10 @@ export const CalendarPage: React.FC = () => {
                     now={currentDate.toDate()}
                     defaultTimedEventDuration={{minute: 15}}
                     eventRender={(e) => {
+                        e.el.setAttribute('data-has-end', '' + (!e.event.extendedProps.ts || !!e.event.extendedProps.ts.end));
+                        if (e.view.type.startsWith('dayGrid')) {
+                            return;
+                        }
                         const content = e.el.getElementsByClassName('fc-content').item(0);
                         if (content) {
                             content.innerHTML = getElementContent(e.event, () => {
@@ -253,8 +259,6 @@ export const CalendarPage: React.FC = () => {
                                 });
                             });
                         }
-
-                        e.el.setAttribute('data-has-end', '' + (!e.event.extendedProps.ts || !!e.event.extendedProps.ts.end));
                     }}
                     slotLabelInterval={{minute: 60}}
                     slotDuration={{minute: 15}}
@@ -271,7 +275,7 @@ export const CalendarPage: React.FC = () => {
                     header={{
                         center: 'title',
                         left: 'prev,next today',
-                        right: 'timeGridWeek,timeGrid5Day,timeGridDay',
+                        right: 'timeGridWeek,timeGrid5Day,timeGridDay,dayGridMonth',
                     }}
                 />
             </FullCalendarStyling>
