@@ -135,7 +135,10 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                         value={range.from}
                         onChange={(startDate) => {
                             entry.statsSelection.rangeId = null;
-                            entry.statsSelection.range = {...range, from: startDate};
+                            entry.statsSelection.range = {
+                                ...range,
+                                from: startDate.success ? startDate.normalized : startDate.text,
+                            };
                             setEntry(entry);
                         }}
                         type="startOf"
@@ -146,7 +149,10 @@ export const DashboardEntryForm: React.FC<EditPopupProps> = ({entry, onChange: s
                         value={range.to}
                         onChange={(endDate) => {
                             entry.statsSelection.rangeId = null;
-                            entry.statsSelection.range = {...range, to: endDate};
+                            entry.statsSelection.range = {
+                                ...range,
+                                to: endDate.success ? endDate.normalized : endDate.text,
+                            };
                             setEntry(entry);
                         }}
                         type="endOf"

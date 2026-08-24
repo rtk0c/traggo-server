@@ -99,12 +99,13 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                         disableUnderline={!changeMode}
                                         style={{width: changeMode ? 170 : 120}}
                                         value={dateRange.from}
-                                        onChange={(value, valid) => {
+                                        onChange={(parsed) => {
+                                            const value = parsed.success ? parsed.normalized : parsed.text;
                                             (changeMode ? setEditedRanges : setRanges)((old) => ({
                                                 ...old,
                                                 [range.id]: {...dateRange, from: value},
                                             }));
-                                            if (valid && changeMode) {
+                                            if (parsed.success && changeMode) {
                                                 saveRanges(range, {...dateRange, from: value}, name);
                                             }
                                         }}
@@ -116,12 +117,13 @@ export const DateRanges: React.FC<Props> = ({changeMode, dashboard, ranges, setR
                                         disableUnderline={!changeMode}
                                         style={{width: changeMode ? 170 : 120}}
                                         value={dateRange.to}
-                                        onChange={(value, valid) => {
+                                        onChange={(parsed) => {
+                                            const value = parsed.success ? parsed.normalized : parsed.text;
                                             (changeMode ? setEditedRanges : setRanges)((old) => ({
                                                 ...old,
                                                 [range.id]: {...dateRange, to: value},
                                             }));
-                                            if (valid && changeMode) {
+                                            if (parsed.success && changeMode) {
                                                 saveRanges(
                                                     range,
                                                     {

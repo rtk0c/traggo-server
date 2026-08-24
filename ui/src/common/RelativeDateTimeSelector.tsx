@@ -1,12 +1,14 @@
 import * as React from 'react';
 import {TextField} from '@material-ui/core';
-import {parseRelativeTime} from '../utils/time';
+import {parseRelativeTime, Success, Failure} from '../utils/time';
 import Typography from '@material-ui/core/Typography';
 import useTimeout from '@rooks/use-timeout';
 
+export type ParsedTime = (Success | Failure) & {text: string};
+
 interface RelativeDateTimeSelectorProps {
     value: string;
-    onChange: (value: string, valid: boolean) => void;
+    onChange: (parsed: ParsedTime) => void;
     type: 'startOf' | 'endOf';
     label?: string;
     disabled?: boolean;
@@ -34,11 +36,12 @@ export const RelativeDateTimeSelector: React.FC<RelativeDateTimeSelectorProps> =
         <TextField
             fullWidth
             style={style}
-            value={parsed.success ? parsed.localized : apiValue}
+            value={apiValue}
             disabled={disabled}
             InputProps={{disableUnderline}}
             onChange={(e) => {
                 const result = parseRelativeTime(e.target.value, type);
+                const parsedResult: ParsedTime = {...result, text: e.target.value};
                 setErrVisible(false);
                 stop();
                 if (!result.success) {
@@ -47,7 +50,7 @@ export const RelativeDateTimeSelector: React.FC<RelativeDateTimeSelectorProps> =
                 } else {
                     setError('');
                 }
-                setValue(result.success ? result.normalized : e.target.value, result.success);
+                setValue(parsedResult);
             }}
             error={error !== ''}
             helperText={

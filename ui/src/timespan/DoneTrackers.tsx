@@ -15,14 +15,15 @@ import {isSameDate} from '../utils/time';
 
 interface DoneTrackersProps {
     addTagsToTracker?: (entries: TagSelectorEntry[]) => void;
-    from?: string;
-    to?: string;
+    from?: moment.Moment;
+    to?: moment.Moment;
 }
 
 export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, from, to}) => {
-    console.log(from, to)
+    const fromString = from ? from.utc().format() : undefined;
+    const toString = to ? to.utc().format() : undefined;
     const trackersResult = useQuery<TimeSpans, TimeSpansVariables>(gqlTimeSpan.TimeSpans, {
-        variables: {cursor: {pageSize: 30}, from, to},
+        variables: {cursor: {pageSize: 30}, from: fromString, to: toString},
     });
     const loading = React.useRef(false);
     const tagsResult = useQuery<Tags>(gqlTag.Tags);
@@ -53,8 +54,8 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, fro
                         offset,
                         pageSize,
                     },
-                    from,
-                    to,
+                    from: fromString,
+                    to: toString,
                 },
                 updateQuery: (prev, {fetchMoreResult}): TimeSpans => {
                     if (!fetchMoreResult) {
@@ -99,7 +100,7 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, fro
     return (
         <div style={{marginTop: 10}}>
             <ReactInfinite
-                key={`${from || ''}-${to || ''}`}
+                key={`${fromString || ''}-${toString || ''}`}
                 useWindowAsScrollContainer
                 preloadBatchSize={window.innerHeight}
                 onInfiniteLoad={fetchMore}

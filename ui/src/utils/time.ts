@@ -1,13 +1,13 @@
 import moment from 'moment-timezone';
 
-interface Success {
+export interface Success {
     success: true;
     preview: moment.Moment;
     localized: string;
     normalized: string;
 }
 
-interface Failure {
+export interface Failure {
     success: false;
     error: string;
 }
