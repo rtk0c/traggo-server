@@ -27,7 +27,7 @@ import {FullCalendarStyling} from './FullCalendarStyling';
 import useInterval from '@rooks/use-interval';
 import {EventApi} from '@fullcalendar/core/api/EventApi';
 import {StopTimer, StopTimerVariables} from '../../gql/__generated__/StopTimer';
-import {removeFromTrackersCache} from '../../gql/utils';
+import {addTimeSpanToUnfilteredCache, removeFromTrackersCache, removeTimeSpanFromUnfilteredCache} from '../../gql/utils';
 import {StartTimer, StartTimerVariables} from '../../gql/__generated__/StartTimer';
 import {timeRunningCalendar} from '../timeutils';
 import {stripTypename} from '../../utils/strip';
@@ -110,9 +110,11 @@ export const CalendarPage: React.FC = () => {
             if (!data || !data.stopTimeSpan) {
                 return;
             }
-            removeFromTrackersCache(cache, data);
+            removeFromTrackersCache(cache, data.stopTimeSpan);
+            removeTimeSpanFromUnfilteredCache(cache, data.stopTimeSpan);
         },
         refetchQueries: [{query: gqlTimeSpan.TimeSpans}],
+        // TODO skip no vars query
     });
     useInterval(
         () => {
@@ -132,6 +134,13 @@ export const CalendarPage: React.FC = () => {
     });
     const [addTimeSpan] = useMutation<AddTimeSpan, AddTimeSpanVariables>(gqlTimeSpan.AddTimeSpan, {
         refetchQueries: [{query: gqlTimeSpan.TimeSpans}],
+        // TODO skip no vars query
+        update: (cache, {data}) => {
+            if (!data || !data.createTimeSpan) {
+                return;
+            }
+            addTimeSpanToUnfilteredCache(cache, data.createTimeSpan);
+        },
     });
 
     const values: ExtendedEventSourceInput[] = (() => {

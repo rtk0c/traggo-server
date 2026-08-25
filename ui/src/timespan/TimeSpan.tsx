@@ -17,7 +17,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import {RemoveTimeSpan, RemoveTimeSpanVariables} from '../gql/__generated__/RemoveTimeSpan';
 import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
 import {isSameDate} from '../utils/time';
-import {removeFromTrackersCache} from '../gql/utils';
+import {addTimeSpanToUnfilteredCache, removeFromTrackersCache, removeTimeSpanFromUnfilteredCache} from '../gql/utils';
 import {StartTimer, StartTimerVariables} from '../gql/__generated__/StartTimer';
 import {RelativeTime, RelativeToNow} from '../common/RelativeTime';
 
@@ -107,9 +107,11 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                 if (!data || !data.stopTimeSpan) {
                     return;
                 }
-                removeFromTrackersCache(cache, data);
+                removeFromTrackersCache(cache, data.stopTimeSpan);
+                addTimeSpanToUnfilteredCache(cache, data.stopTimeSpan);
             },
             refetchQueries: [{query: gqlTimeSpan.TimeSpans}],
+            // TODO skip no vars query
         });
         const [startTimer] = useMutation<StartTimer, StartTimerVariables>(gqlTimeSpan.StartTimer, {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
@@ -123,6 +125,14 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
         };
         const [removeTimeSpan] = useMutation<RemoveTimeSpan, RemoveTimeSpanVariables>(gqlTimeSpan.RemoveTimeSpan, {
             refetchQueries: [{query: gqlTimeSpan.TimeSpans}, {query: gqlTimeSpan.Trackers}],
+            // TODO skip no vars query
+            update: (cache, {data}) => {
+                if (!data || !data.removeTimeSpan) {
+                    return;
+                }
+                removeFromTrackersCache(cache, data.removeTimeSpan);
+                removeTimeSpanFromUnfilteredCache(cache, data.removeTimeSpan);
+            },
         });
 
         const updateNote = (newValue: string) => {
