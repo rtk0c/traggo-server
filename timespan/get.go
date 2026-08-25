@@ -50,7 +50,7 @@ func (r *ResolverForTimeSpan) TimeSpans(ctx context.Context, fromInclusive *mode
 	return &gqlmodel.PagedTimeSpans{
 		TimeSpans: result,
 		Cursor: &gqlmodel.Cursor{
-			HasMore:  len(timeSpans) != 0 && *cursor.Offset%*cursor.PageSize == 0,
+			HasMore:  len(timeSpans) == *cursor.PageSize,
 			Offset:   *cursor.Offset + len(timeSpans),
 			StartID:  *cursor.StartID,
 			PageSize: *cursor.PageSize},
