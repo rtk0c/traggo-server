@@ -62,11 +62,45 @@ export const CalendarPage: React.FC = () => {
             to: moment()
                 .endOf('week')
                 .format(),
-            // BUG (same as before this commit)
-            // if there are more than 100 items (which is the server side page size limit in get.go), everything else gets dropped
             cursor: {pageSize: 100},
         },
         fetchPolicy: 'cache-and-network',
+    });
+    // The server caps the page size (see normalize() in timespan/get.go), so fetch
+    // remaining pages until the range is fully loaded instead of silently dropping
+    // everything past the first page.
+    const draining = React.useRef(false);
+    React.useEffect(() => {
+        if (!timeSpansResult.data || timeSpansResult.loading || draining.current) {
+            return;
+        }
+        const {hasMore, startId, offset, pageSize} = timeSpansResult.data.timeSpans.cursor;
+        if (!hasMore) {
+            return;
+        }
+        draining.current = true;
+        timeSpansResult
+            .fetchMore({
+                variables: {cursor: {startId, offset, pageSize}},
+                updateQuery: (prev, {fetchMoreResult}): TimeSpans => {
+                    if (!fetchMoreResult) {
+                        return prev;
+                    }
+                    return {
+                        timeSpans: {
+                            __typename: 'PagedTimeSpans',
+                            timeSpans: [...prev.timeSpans.timeSpans, ...fetchMoreResult.timeSpans.timeSpans],
+                            cursor: fetchMoreResult.timeSpans.cursor,
+                        },
+                    };
+                },
+            })
+            .catch(() => {})
+            .then(() => {
+                draining.current = false;
+                // Trigger a re-check for further pages.
+                timeSpansResult.updateQuery((prev) => ({...prev}));
+            });
     });
     const trackersResult = useQuery<Trackers>(gqlTimeSpan.Trackers, {fetchPolicy: 'cache-and-network'});
     const tagsResult = useQuery<Tags>(gqlTag.Tags);

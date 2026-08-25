@@ -31,6 +31,7 @@ export const TimeSpans = gql`
                 note
             }
             cursor {
+                hasMore
                 startId
                 offset
                 pageSize
