@@ -83,13 +83,12 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, fro
     };
 
     const values: GroupedTimeSpanProps = React.useMemo(() => {
+        // Deliberately do not check trackersResult.loading here: during fetchMore
+        // (and cache-and-network refetches) loading flips to true, and returning []
+        // would collapse the list and reset the window scroll position.
         if (
-            trackersResult.error ||
-            trackersResult.loading ||
             !trackersResult.data ||
             trackersResult.data.timeSpans === null ||
-            tagsResult.error ||
-            tagsResult.loading ||
             !tagsResult.data ||
             tagsResult.data.tags === null
         ) {
