@@ -24,6 +24,7 @@ export const DoneTrackers: React.FC<DoneTrackersProps> = ({addTagsToTracker, fro
     const toString = to ? to.utc().format() : undefined;
     const trackersResult = useQuery<TimeSpans, TimeSpansVariables>(gqlTimeSpan.TimeSpans, {
         variables: {cursor: {pageSize: 30}, from: fromString, to: toString},
+        fetchPolicy: 'cache-and-network',
     });
     const loading = React.useRef(false);
     const tagsResult = useQuery<Tags>(gqlTag.Tags);

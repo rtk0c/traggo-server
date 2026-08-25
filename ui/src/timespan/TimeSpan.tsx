@@ -16,10 +16,8 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import {RemoveTimeSpan, RemoveTimeSpanVariables} from '../gql/__generated__/RemoveTimeSpan';
 import {useStateAndDelegateWithDelayOnChange} from '../utils/hooks';
-import {TimeSpans} from '../gql/__generated__/TimeSpans';
 import {isSameDate} from '../utils/time';
-import {Trackers} from '../gql/__generated__/Trackers';
-import {addTimeSpanToCache, removeFromTrackersCache} from '../gql/utils';
+import {removeFromTrackersCache} from '../gql/utils';
 import {StartTimer, StartTimerVariables} from '../gql/__generated__/StartTimer';
 import {RelativeTime, RelativeToNow} from '../common/RelativeTime';
 
@@ -110,50 +108,21 @@ export const TimeSpan: React.FC<TimeSpanProps> = React.memo(
                     return;
                 }
                 removeFromTrackersCache(cache, data);
-                addTimeSpanToCache(cache, data.stopTimeSpan);
             },
+            refetchQueries: [{query: gqlTimeSpan.TimeSpans}],
         });
         const [startTimer] = useMutation<StartTimer, StartTimerVariables>(gqlTimeSpan.StartTimer, {
             refetchQueries: [{query: gqlTimeSpan.Trackers}],
         });
-        const [updateTimeSpan] = useMutation<UpdateTimeSpan, UpdateTimeSpanVariables>(gqlTimeSpan.UpdateTimeSpan);
+        const [updateTimeSpan] = useMutation<UpdateTimeSpan, UpdateTimeSpanVariables>(gqlTimeSpan.UpdateTimeSpan, {
+            refetchQueries: [{query: gqlTimeSpan.TimeSpans}],
+        });
         const noteAwareUpdateTimeSpan = ({variables}: {variables: Omit<UpdateTimeSpanVariables, 'note'>}) => {
             clearTimeout(note.current.handle);
             return updateTimeSpan({variables: {...variables, note: note.current.value}});
         };
         const [removeTimeSpan] = useMutation<RemoveTimeSpan, RemoveTimeSpanVariables>(gqlTimeSpan.RemoveTimeSpan, {
-            update: (cache, {data}) => {
-                let oldData: TimeSpans | null = null;
-                try {
-                    oldData = cache.readQuery<TimeSpans>({query: gqlTimeSpan.TimeSpans});
-                } catch (e) {}
-
-                const oldTrackers = cache.readQuery<Trackers>({query: gqlTimeSpan.Trackers});
-                if (!data || !data.removeTimeSpan) {
-                    return;
-                }
-                const removedId = data.removeTimeSpan.id;
-                if (oldTrackers) {
-                    cache.writeQuery<Trackers>({
-                        query: gqlTimeSpan.Trackers,
-                        data: {
-                            timers: (oldTrackers.timers || []).filter((tracker) => tracker.id !== removedId),
-                        },
-                    });
-                }
-                if (oldData) {
-                    cache.writeQuery<TimeSpans>({
-                        query: gqlTimeSpan.TimeSpans,
-                        data: {
-                            timeSpans: {
-                                __typename: 'PagedTimeSpans',
-                                timeSpans: oldData.timeSpans.timeSpans.filter((ts) => ts.id !== removedId),
-                                cursor: oldData.timeSpans.cursor,
-                            },
-                        },
-                    });
-                }
-            },
+            refetchQueries: [{query: gqlTimeSpan.TimeSpans}, {query: gqlTimeSpan.Trackers}],
         });
 
         const updateNote = (newValue: string) => {
