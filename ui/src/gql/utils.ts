@@ -1,9 +1,8 @@
 import {DataProxy} from 'apollo-cache';
-import {TimeSpans} from './__generated__/TimeSpans';
+import {TimeSpans, TimeSpansVariables} from './__generated__/TimeSpans';
 import * as gqlTimeSpan from './timeSpan';
 import moment from 'moment';
 import {AddTimeSpan_createTimeSpan} from './__generated__/AddTimeSpan';
-import {TimeSpansInRange, TimeSpansInRangeVariables} from './__generated__/TimeSpansInRange';
 import {Trackers} from './__generated__/Trackers';
 import {StopTimer} from './__generated__/StopTimer';
 
@@ -28,13 +27,13 @@ export const addTimeSpanToCache = (cache: DataProxy, ts: AddTimeSpan_createTimeS
         },
     });
 };
-export const addTimeSpanInRangeToCache = (cache: DataProxy, ts: AddTimeSpan_createTimeSpan, vars: TimeSpansInRangeVariables) => {
-    const oldTimeSpans = cache.readQuery<TimeSpansInRange>({query: gqlTimeSpan.TimeSpansInRange, variables: vars});
+export const addTimeSpanInRangeToCache = (cache: DataProxy, ts: AddTimeSpan_createTimeSpan, vars: TimeSpansVariables) => {
+    const oldTimeSpans = cache.readQuery<TimeSpans>({query: gqlTimeSpan.TimeSpans, variables: vars});
     if (!oldTimeSpans) {
         return;
     }
-    cache.writeQuery<TimeSpansInRange>({
-        query: gqlTimeSpan.TimeSpansInRange,
+    cache.writeQuery<TimeSpans>({
+        query: gqlTimeSpan.TimeSpans,
         variables: vars,
         data: {
             timeSpans: {
@@ -60,13 +59,13 @@ export const removeFromTrackersCache = (cache: DataProxy, data: StopTimer) => {
     });
 };
 
-export const removeFromTimeSpanInRangeCache = (cache: DataProxy, id: number, vars: TimeSpansInRangeVariables) => {
-    const old = cache.readQuery<TimeSpansInRange>({query: gqlTimeSpan.TimeSpansInRange, variables: vars});
+export const removeFromTimeSpanInRangeCache = (cache: DataProxy, id: number, vars: TimeSpansVariables) => {
+    const old = cache.readQuery<TimeSpans>({query: gqlTimeSpan.TimeSpans, variables: vars});
     if (!old) {
         return;
     }
-    cache.writeQuery<TimeSpansInRange>({
-        query: gqlTimeSpan.TimeSpansInRange,
+    cache.writeQuery<TimeSpans>({
+        query: gqlTimeSpan.TimeSpans,
         variables: vars,
         data: {
             timeSpans: {

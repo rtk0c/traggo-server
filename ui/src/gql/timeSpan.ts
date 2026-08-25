@@ -16,29 +16,6 @@ export const Trackers = gql`
     }
 `;
 
-export const TimeSpansInRange = gql`
-    query TimeSpansInRange($start: Time!, $end: Time!) {
-        timeSpans(fromInclusive: $start, toInclusive: $end) {
-            timeSpans {
-                id
-                start
-                end
-                tags {
-                    key
-                    value
-                }
-                oldStart
-                note
-            }
-            cursor {
-                startId
-                offset
-                pageSize
-            }
-        }
-    }
-`;
-
 export const TimeSpans = gql`
     query TimeSpans($cursor: InputCursor, $from: Time, $to: Time) {
         timeSpans(cursor: $cursor, fromInclusive: $from, toInclusive: $to) @connection(key: "AllTimeSpans", filter: ["from", "to"]) {

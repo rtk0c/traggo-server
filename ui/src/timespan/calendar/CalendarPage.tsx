@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Paper, useTheme} from '@material-ui/core';
 import moment from 'moment';
 import {useApolloClient, useMutation, useQuery} from '@apollo/react-hooks';
-import {TimeSpans_timeSpans_timeSpans} from '../../gql/__generated__/TimeSpans';
+import {TimeSpans, TimeSpansVariables, TimeSpans_timeSpans_timeSpans} from '../../gql/__generated__/TimeSpans';
 import * as gqlTimeSpan from '../../gql/timeSpan';
 import {Trackers} from '../../gql/__generated__/Trackers';
 import {Tags} from '../../gql/__generated__/Tags';
@@ -36,7 +36,6 @@ import {
 import {StartTimer, StartTimerVariables} from '../../gql/__generated__/StartTimer';
 import {timeRunningCalendar} from '../timeutils';
 import {stripTypename} from '../../utils/strip';
-import {TimeSpansInRange, TimeSpansInRangeVariables} from '../../gql/__generated__/TimeSpansInRange';
 import {ExtendedEventSourceInput} from '@fullcalendar/core/structs/event-source';
 
 const toMoment = (date: Date): moment.Moment => {
@@ -55,14 +54,17 @@ const StartTimerId = '-1';
 export const CalendarPage: React.FC = () => {
     const apollo = useApolloClient();
     const theme = useTheme();
-    const timeSpansResult = useQuery<TimeSpansInRange, TimeSpansInRangeVariables>(gqlTimeSpan.TimeSpansInRange, {
+    const timeSpansResult = useQuery<TimeSpans, TimeSpansVariables>(gqlTimeSpan.TimeSpans, {
         variables: {
-            start: moment()
+            from: moment()
                 .startOf('week')
                 .format(),
-            end: moment()
+            to: moment()
                 .endOf('week')
                 .format(),
+            // BUG (same as before this commit)
+            // if there are more than 100 items (which is the server side page size limit in get.go), everything else gets dropped
+            cursor: {pageSize: 100},
         },
         fetchPolicy: 'cache-and-network',
     });
@@ -221,10 +223,10 @@ export const CalendarPage: React.FC = () => {
                     datesRender={(x) => {
                         const range = {start: moment(x.view.currentStart), end: moment(x.view.currentEnd)};
                         if (
-                            !moment(timeSpansResult.variables.start).isSame(range.start) ||
-                            !moment(timeSpansResult.variables.end).isSame(range.end)
+                            !moment(timeSpansResult.variables.from).isSame(range.start) ||
+                            !moment(timeSpansResult.variables.to).isSame(range.end)
                         ) {
-                            timeSpansResult.refetch(range);
+                            timeSpansResult.refetch({from: range.start.format(), to: range.end.format()});
                         }
                     }}
                     views={{
